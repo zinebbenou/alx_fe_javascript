@@ -36,7 +36,7 @@ function addQuote() {
     saveQuotes();
     populateCategories(); // Update the categories dropdown
     showRandomQuote(); // Show the new quote
-    fetchQuotesFromServer(); // Sync with server
+    syncQuotes(); // Sync with server
   }
 }
 
@@ -130,11 +130,12 @@ document.getElementById('exportButton').addEventListener('click', exportToJson);
 // Function to fetch quotes from the server and sync local data
 async function fetchQuotesFromServer() {
   try {
-    // Fetch quotes from the server
     const response = await fetch(serverUrl);
     const serverQuotes = await response.json();
-    // Conflict resolution: Replace local data with server data if server data is newer
+
     if (serverQuotes.length > 0) {
+      // Resolve conflicts by merging or replacing local data
+      // For simplicity, replacing local quotes with server quotes
       quotes = serverQuotes; // Replace local quotes with server quotes
       saveQuotes();
       populateCategories();
@@ -144,8 +145,10 @@ async function fetchQuotesFromServer() {
   } catch (error) {
     console.error('Error fetching data from server:', error);
   }
+}
 
-  // Post quotes to the server
+// Function to post quotes to the server
+async function postQuotesToServer() {
   try {
     const response = await fetch(serverUrl, {
       method: 'POST',
@@ -161,5 +164,15 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Periodically fetch data from the server every 5 minutes
-setInterval(fetchQuotesFromServer, 300000);
+// Sync quotes by both posting and fetching
+function syncQuotes() {
+  postQuotesToServer(); // Post local data to the server
+  fetchQuotesFromServer(); // Fetch server data and update local data
+}
+
+// Periodically sync data from the server every 5 minutes
+setInterval(syncQuotes, 300000);
+
+// Event listener for manual sync
+document.getElementById('syncButton').addEventListener('click', syncQuotes);
+
