@@ -130,10 +130,10 @@ document.getElementById('exportButton').addEventListener('click', exportToJson);
 // Function to fetch quotes from the server and sync local data
 async function fetchQuotesFromServer() {
   try {
+    // Fetch quotes from the server
     const response = await fetch(serverUrl);
     const serverQuotes = await response.json();
     // Conflict resolution: Replace local data with server data if server data is newer
-    // For simplicity, we assume the server data takes precedence
     if (serverQuotes.length > 0) {
       quotes = serverQuotes; // Replace local quotes with server quotes
       saveQuotes();
@@ -143,6 +143,21 @@ async function fetchQuotesFromServer() {
     }
   } catch (error) {
     console.error('Error fetching data from server:', error);
+  }
+
+  // Post quotes to the server
+  try {
+    const response = await fetch(serverUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(quotes)
+    });
+    const result = await response.json();
+    console.log('Data posted to server:', result);
+  } catch (error) {
+    console.error('Error posting data to server:', error);
   }
 }
 
