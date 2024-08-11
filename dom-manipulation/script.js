@@ -36,7 +36,7 @@ function addQuote() {
     saveQuotes();
     populateCategories(); // Update the categories dropdown
     showRandomQuote(); // Show the new quote
-    syncWithServer(); // Sync with server
+    fetchQuotesFromServer(); // Sync with server
   }
 }
 
@@ -127,10 +127,9 @@ document.getElementById('importFile').addEventListener('change', importFromJsonF
 // Event listener for JSON export
 document.getElementById('exportButton').addEventListener('click', exportToJson);
 
-// Function to sync data with server
-async function syncWithServer() {
+// Function to fetch quotes from the server and sync local data
+async function fetchQuotesFromServer() {
   try {
-    // Fetch data from server
     const response = await fetch(serverUrl);
     const serverQuotes = await response.json();
     // Conflict resolution: Replace local data with server data if server data is newer
@@ -143,9 +142,9 @@ async function syncWithServer() {
       alert('Data synced with server.');
     }
   } catch (error) {
-    console.error('Error syncing with server:', error);
+    console.error('Error fetching data from server:', error);
   }
 }
 
-// Periodically sync with server every 5 minutes
-setInterval(syncWithServer, 300000);
+// Periodically fetch data from the server every 5 minutes
+setInterval(fetchQuotesFromServer, 300000);
