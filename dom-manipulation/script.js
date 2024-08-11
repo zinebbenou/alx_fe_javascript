@@ -82,19 +82,25 @@ function loadLastFilter() {
   }
 }
 
-// Event listener for the "Show New Quote" button
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+// Function to display a notification message
+function showNotification(message) {
+  const notificationDiv = document.createElement('div');
+  notificationDiv.textContent = message;
+  notificationDiv.style.position = 'fixed';
+  notificationDiv.style.bottom = '10px';
+  notificationDiv.style.right = '10px';
+  notificationDiv.style.padding = '10px';
+  notificationDiv.style.backgroundColor = '#4CAF50'; // Green
+  notificationDiv.style.color = 'white';
+  notificationDiv.style.borderRadius = '5px';
+  notificationDiv.style.zIndex = '1000';
+  document.body.appendChild(notificationDiv);
 
-// Event listener for the category filter
-document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
-
-// Event listener for adding new quotes
-document.querySelector('button[onclick="addQuote()"]').addEventListener('click', addQuote);
-
-// Initialize the app
-loadQuotes();
-populateCategories();
-loadLastFilter();
+  // Remove the notification after 3 seconds
+  setTimeout(() => {
+    document.body.removeChild(notificationDiv);
+  }, 3000);
+}
 
 // Function to export quotes to a JSON file
 function exportToJson() {
@@ -116,34 +122,26 @@ function importFromJsonFile(event) {
     saveQuotes();
     populateCategories();
     showRandomQuote();
-    alert('Quotes imported successfully!');
+    showNotification('Quotes imported successfully!');
   };
   fileReader.readAsText(event.target.files[0]);
 }
-
-// Event listener for JSON import
-document.getElementById('importFile').addEventListener('change', importFromJsonFile);
-
-// Event listener for JSON export
-document.getElementById('exportButton').addEventListener('click', exportToJson);
 
 // Function to fetch quotes from the server and sync local data
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch(serverUrl);
     const serverQuotes = await response.json();
-
     if (serverQuotes.length > 0) {
-      // Resolve conflicts by merging or replacing local data
-      // For simplicity, replacing local quotes with server quotes
       quotes = serverQuotes; // Replace local quotes with server quotes
       saveQuotes();
       populateCategories();
       showRandomQuote();
-      alert('Data synced with server.');
+      showNotification('Quotes synced with server!');
     }
   } catch (error) {
     console.error('Error fetching data from server:', error);
+    showNotification('Error fetching data from server!');
   }
 }
 
@@ -159,20 +157,35 @@ async function postQuotesToServer() {
     });
     const result = await response.json();
     console.log('Data posted to server:', result);
+    return result; // Return result for chaining
   } catch (error) {
     console.error('Error posting data to server:', error);
+    throw error; // Propagate error
   }
 }
 
 // Sync quotes by both posting and fetching
 function syncQuotes() {
-  postQuotesToServer(); // Post local data to the server
-  fetchQuotesFromServer(); // Fetch server data and update local data
+  postQuotesToServer()
+    .then(() => fetchQuotesFromServer())
+    .catch(error => {
+      console.error('Error syncing quotes:', error);
+      showNotification('Error syncing quotes!');
+    });
 }
 
 // Periodically sync data from the server every 5 minutes
 setInterval(syncQuotes, 300000);
 
-// Event listener for manual sync
+// Event listeners
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+document.getElementById('categoryFilter').addEventListener('change', filterQuotes);
+document.querySelector('button[onclick="addQuote()"]').addEventListener('click', addQuote);
+document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+document.getElementById('exportButton').addEventListener('click', exportToJson);
 document.getElementById('syncButton').addEventListener('click', syncQuotes);
 
+// Initialize the app
+loadQuotes();
+populateCategories();
+loadLastFilter();
