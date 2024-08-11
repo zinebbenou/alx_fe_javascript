@@ -1,9 +1,10 @@
 // Define your quotes array
 let quotes = [
-  // Example quotes format
   { text: "To be, or not to be, that is the question.", category: "Philosophy" },
   { text: "The only thing we have to fear is fear itself.", category: "Inspiration" }
 ];
+
+const serverUrl = 'https://jsonplaceholder.typicode.com/posts'; // Mock API endpoint
 
 // Function to save quotes to local storage
 function saveQuotes() {
@@ -35,6 +36,7 @@ function addQuote() {
     saveQuotes();
     populateCategories(); // Update the categories dropdown
     showRandomQuote(); // Show the new quote
+    syncWithServer(); // Sync with server
   }
 }
 
@@ -124,3 +126,26 @@ document.getElementById('importFile').addEventListener('change', importFromJsonF
 
 // Event listener for JSON export
 document.getElementById('exportButton').addEventListener('click', exportToJson);
+
+// Function to sync data with server
+async function syncWithServer() {
+  try {
+    // Fetch data from server
+    const response = await fetch(serverUrl);
+    const serverQuotes = await response.json();
+    // Conflict resolution: Replace local data with server data if server data is newer
+    // For simplicity, we assume the server data takes precedence
+    if (serverQuotes.length > 0) {
+      quotes = serverQuotes; // Replace local quotes with server quotes
+      saveQuotes();
+      populateCategories();
+      showRandomQuote();
+      alert('Data synced with server.');
+    }
+  } catch (error) {
+    console.error('Error syncing with server:', error);
+  }
+}
+
+// Periodically sync with server every 5 minutes
+setInterval(syncWithServer, 300000);
