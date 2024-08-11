@@ -20,9 +20,23 @@ function addQuote() {
     quotes.push({ text: newQuoteText, category: newQuoteCategory });
     document.getElementById('newQuoteText').value = '';
     document.getElementById('newQuoteCategory').value = '';
+    showRandomQuote();  // Optionally show the new quote immediately
   }
 }
 
-// Event listeners
+// Function to create and add the quote form to the DOM
+function createAddQuoteForm() {
+  const container = document.getElementById('quoteForm');
+  
+  const quoteTextInput = document.getElementById('newQuoteText');
+  const quoteCategoryInput = document.getElementById('newQuoteCategory');
+  
+  const addButton = document.getElementById('addQuote');
+  addButton.addEventListener('click', addQuote);
+}
+
+// Create the form when the page loads
+window.onload = createAddQuoteForm;
+
+// Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
-document.getElementById('addQuote').addEventListener('click', addQuote);
